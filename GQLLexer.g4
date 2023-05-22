@@ -170,10 +170,6 @@ AVG
    : 'AVG'
    ;
 
-BETWEEN
-   : 'BETWEEN'
-   ;
-
 BIG
    : 'BIG'
    ;
@@ -490,10 +486,6 @@ GROUPS
    : 'GROUPS'
    ;
 
-GROUP_CONCAT
-   : 'GROUP_CONCAT'
-   ;
-
 HAVING
    : 'HAVING'
    ;
@@ -508,10 +500,6 @@ HOME_PROPERTY_GRAPH
 
 HOME_SCHEMA
    : 'HOME_SCHEMA'
-   ;
-
-ID
-   : 'ID'
    ;
 
 I_DONT_KNOW_1
@@ -638,10 +626,6 @@ LEFT
    : 'LEFT'
    ;
 
-LENGTH
-   : 'LENGTH'
-   ;
-
 LET
    : 'LET'
    ;
@@ -686,20 +670,12 @@ LOG10
    : 'LOG10'
    ;
 
-LONG
-   : 'LONG'
-   ;
-
 LOWER
    : 'LOWER'
    ;
 
 LTRIM
    : 'LTRIM'
-   ;
-
-MAP
-   : 'MAP'
    ;
 
 MATCH
@@ -842,10 +818,6 @@ PERCENTILE_DISC
    : 'PERCENTILE_DISC'
    ;
 
-PER_NODE_LIMIT
-   : 'PER_NODE_LIMIT'
-   ; //扩展语法 PER_NODE_LIMIT
-
 POWER
    : 'POWER'
    ;
@@ -869,10 +841,6 @@ RADIANS
 READ
    : 'READ'
    ;
-
-READ_CONSISTENCY
-   : 'READ_CONSISTENCY'
-   ; // geabase扩展hint
 
 REAL
    : 'REAL'
@@ -984,10 +952,6 @@ STDDEV_SAMP
 
 STRING
    : 'STRING'
-   ;
-
-SUBSTR
-   : 'SUBSTR'
    ;
 
 SUM
@@ -1198,90 +1162,6 @@ INTERVAL_YEAR
    | 'YEARS'
    ;
 
-//[Extend: Geaphi] start
-
-//window function extend
-
-PARTITION
-   : 'PARTITION'
-   ;
-
-ROW_NUMBER
-   : 'ROW_NUMBER'
-   ;
-
-RANK
-   : 'RANK'
-   ;
-
-DENSE_RANK
-   : 'DENSE_RANK'
-   ;
-
-CUME_DIST
-   : 'CUME_DIST'
-   ;
-
-PERCENT_RANK
-   : 'PERCENT_RANK'
-   ;
-
-OVER
-   : 'OVER'
-   ;
-
-// join
-
-JOIN
-   : 'JOIN'
-   ;
-
-ON
-   : 'ON'
-   ;
-
-INNER
-   : 'INNER'
-   ;
-
-CROSS
-   : 'CROSS'
-   ;
-
-//Contruct 语法支持
-
-CONSTRUCT
-   : 'CONSTRUCT'
-   ;
-
-PROPERTIES
-   : 'PROPERTIES'
-   ;
-
-PRIMARY
-   : 'PRIMARY'
-   ;
-
-KEY
-   : 'KEY'
-   ;
-
-// sliding windows
-
-SLIDING
-   : 'SLIDING'
-   ;
-
-UNTIL
-   : 'UNTIL'
-   ;
-
-STEP
-   : 'STEP'
-   ;
-
-//[Extend: Geaphi] end
-
 EDGE_SYNONYM
    : 'EDGE'
    | 'RELATIONSHIP'
@@ -1325,6 +1205,8 @@ PRE_RESERVED_WORD
    | 'INSTANT'
    | 'NOTHING'
    | 'NUMERIC'
+   | 'ON'
+   | 'PARTITION'
    | 'PROCEDURE'
    | 'PRODUCT'
    | 'PROJECT'
@@ -1344,14 +1226,15 @@ NON_RESERVED_WORD
    : ACYCLIC
    | BINDING
    | BINDINGS
-   | PATH
-   ; // geabase ID当做非保留字，否则属性名为id不可用
+   ;
 
 MULTISET_ALTERNATION_OPERATOR
    : '|+|'
    ;
 
 // DELIMITER_TOKEN : GQL_SPECIAL_CHARACTER|BRACKET_RIGHT_ARROW|BRACKET_TILDE_RIGHT_ARROW|CHARACTER_STRING_LITERAL|CONCATENATION_OPERATOR|DATE_STRING|DATETIME_STRING|DELIMITED_IDENTIFIER|DOUBLE_COLON|DOUBLE_MINUS_SIGN|DOUBLE_PERIOD|DURATION_STRING|GREATER_THAN_OPERATOR|GREATER_THAN_OR_EQUALS_OPERATOR|LEFT_ARROW|LEFT_ARROW_BRACKET|LEFT_ARROW_TILDE|LEFT_ARROW_TILDE_BRACKET|LEFT_MINUS_RIGHT|LEFT_MINUS_SLASH|LEFT_TILDE_SLASH|LESS_THAN_OPERATOR|LESS_THAN_OR_EQUALS_OPERATOR|MINUS_LEFT_BRACKET|MINUS_SLASH|NOT_EQUALS_OPERATOR|RIGHT_ARROW|RIGHT_BRACKET_MINUS|RIGHT_BRACKET_TILDE|SLASH_MINUS|SLASH_MINUS_RIGHT|SLASH_TILDE|SLASH_TILDE_RIGHT|TILDE_LEFT_BRACKET|TILDE_RIGHT_ARROW|TILDE_SLASH|TIME_STRING ;
+
+//CHANGELOG[GLC]：BRACKET_RIGHT_ARROW等token直接在语法中用对应的字符token拼接，从而支持中间可以有空格。例如BRACKET_RIGHT_ARROW => RIGHT_BRACKET RIGHT_ARROW
 
 //BRACKET_RIGHT_ARROW : ']->' ;
 
@@ -1366,7 +1249,6 @@ DOUBLE_COLON
    ;
 
 //remove Feature GB02 support
-
 //DOUBLE_MINUS_SIGN : '--' ;
 
 DOUBLE_PERIOD
@@ -1376,12 +1258,6 @@ DOUBLE_PERIOD
 GREATER_THAN_OR_EQUALS_OPERATOR
    : '>='
    ;
-
-HINT_BEGIN
-   : '/*+'
-   ; // geabase扩展hint
-
-//HINT_END : '*/' ;  // geabase扩展hint
 
 //LEFT_ARROW : '<-' ;
 
@@ -1399,10 +1275,6 @@ LEFT_MINUS_SLASH
    : '<-/'
    ;
 
-LEFT_SHIFT
-   : '<<'
-   ; // geabase扩展运算符
-
 LEFT_TILDE_SLASH
    : '<~/'
    ;
@@ -1419,8 +1291,7 @@ MINUS_SLASH
 
 NOT_EQUALS_OPERATOR
    : '<>'
-   | '!='
-   ; // 兼容geabase
+   ;
 
 RIGHT_ARROW
    : '->'
@@ -1429,14 +1300,6 @@ RIGHT_ARROW
 //RIGHT_BRACKET_MINUS : ']-' ;
 
 //RIGHT_BRACKET_TILDE : ']~' ;
-
-RIGHT_SHIFT
-   : '>>'
-   ; // geabase扩展
-
-SAFE_EXQUAL_OPERATOR
-   : '<=>'
-   ; // geabase扩展
 
 //SLASH_MINUS : '/-' ;
 
@@ -1591,18 +1454,16 @@ REGULAR_IDENTIFIER
    : IDENTIFIER_START (IDENTIFIER_EXTEND)*
    ;
 
-// EXTENDED_IDENTIFIER : ( IDENTIFIER_EXTEND )+ ;
+//EXTENDED_IDENTIFIER : ( IDENTIFIER_EXTEND )+ ;
 
 IDENTIFIER_START
    : ID_Start
    | Pc
-   | '@'
-   ; // geabase扩展语法 @ #
+   ;
 
 IDENTIFIER_EXTEND
    : ID_Continue
    | Sc
-   | '#'
    ;
 
 SP
@@ -1647,7 +1508,7 @@ WHITESPACE
    ;
 
 Comment
-   : ('/*' Comment_4 (Comment_1 | ('*' Comment_2))* '*/')
+   : ('/*' (Comment_1 | ('*' Comment_2))* '*/')
    | ('//' (Comment_3)* CR? (LF | EOF))
    ;
 
@@ -1779,8 +1640,6 @@ OTHER_LANGUAGE_CHARACTER
    : 'I_DONT_KNOW_20'
    ;
 
-//KEYWORD:LABEL| LABELS;
-
 fragment COMMERCIAL_AT
    : '@'
    ;
@@ -1820,12 +1679,13 @@ fragment ID_Continue
 fragment Comment_1
    : ~ [*]
    ;
-   // 支持转义
 
+// support escape
 fragment StringLiteral_0
    : ~ ["]
    ;
 
+// support escape
 fragment StringLiteral_1
    : ~ [']
    ;
@@ -1837,10 +1697,6 @@ fragment Comment_3
 fragment Comment_2
    : ~ [/]
    ;
-
-fragment Comment_4
-   : ~ [+]
-   ; // geabase扩展hint 格式为/*+  */
 
 fragment GS
    : [\u001D]
