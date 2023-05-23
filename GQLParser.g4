@@ -185,32 +185,16 @@ floatLiteral
    | UNSIGNED_DECIMAL_IN_SCIENTIFIC_NOTATION
    ;
 
-unbrokenSingleQuotedCharacterSequence
+singleQuotedCharacterSequence
    : SINGLE_QUOTED_STRING_LITERAL
    ;
 
-unbrokenDoubleQuotedCharacterSequence
+doubleQuotedCharacterSequence
    : DOUBLE_QUOTED_STRING_LITERAL
    ;
 
-unbrokenAccentQuotedCharacterSequence
-   : ACCENT_QUOTED_STRING_LITERAL
-   ;
-
-singleQuotedCharacterSequence
-   : unbrokenSingleQuotedCharacterSequence (VERTICAL_BAR unbrokenSingleQuotedCharacterSequence)*
-   ;
-
-doubleQuotedCharacterSequence
-   : unbrokenDoubleQuotedCharacterSequence (VERTICAL_BAR unbrokenDoubleQuotedCharacterSequence)*
-   ;
-
 accentQuotedCharacterSequence
-   : unbrokenAccentQuotedCharacterSequence (VERTICAL_BAR unbrokenAccentQuotedCharacterSequence)*
-   ;
-
-unbrokenCharacterStringLiteral
-   : (unbrokenSingleQuotedCharacterSequence | unbrokenDoubleQuotedCharacterSequence)
+   : ACCENT_QUOTED_STRING_LITERAL
    ;
 
 nullLiteral
@@ -232,19 +216,19 @@ sqlDatetimeLiteral
    ;
 
 dateLiteral
-   : DATE unbrokenCharacterStringLiteral
+   : DATE characterStringLiteral
    ;
 
 timeLiteral
-   : TIME unbrokenCharacterStringLiteral
+   : TIME characterStringLiteral
    ;
 
 datetimeLiteral
-   : (DATETIME | TIMESTAMP) unbrokenCharacterStringLiteral
+   : (DATETIME | TIMESTAMP) characterStringLiteral
    ;
 
 durationLiteral
-   : DURATION unbrokenCharacterStringLiteral
+   : DURATION characterStringLiteral
    | sqlIntervalLiteral
    ;
 
@@ -380,7 +364,7 @@ bindingVariable
 predefinedTypeLiteral
    : booleanLiteral
    | characterStringLiteral
-   | BYTE_STRING_LITERAL
+   | byteStringLiteral
    | temporalLiteral
    | durationLiteral
    | nullLiteral
@@ -395,6 +379,10 @@ booleanLiteral
 characterStringLiteral
    : singleQuotedCharacterSequence
    | doubleQuotedCharacterSequence
+   ;
+
+byteStringLiteral
+   : BYTE_STRING_LITERAL
    ;
 
 procedureBody
@@ -2409,15 +2397,15 @@ datetimeFunctionParameters
    ;
 
 dateString
-   : unbrokenCharacterStringLiteral
+   : characterStringLiteral
    ;
 
 timeString
-   : unbrokenCharacterStringLiteral
+   : characterStringLiteral
    ;
 
 datetimeString
-   : unbrokenCharacterStringLiteral
+   : characterStringLiteral
    ;
 
 durationFunction
@@ -2431,7 +2419,7 @@ durationFunctionParameters
    ;
 
 durationString
-   : unbrokenCharacterStringLiteral
+   : characterStringLiteral
    ;
 
 generalFunction

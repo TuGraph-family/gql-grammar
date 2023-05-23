@@ -21,3 +21,7 @@ ISO GQL (ISO/IEC 39075) Antlr4 语法文件
 ## 许可证
 
 本项目使用[Apache License 2.0](LICENSE)。
+
+## 联系方式
+
+Email: tugraph@service.alipay.com
