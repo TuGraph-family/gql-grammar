@@ -510,7 +510,7 @@ createGraphStatement
    ;
 
 openGraphType
-   : OPEN (PROPERTY? GRAPH)? TYPE
+   : typed? ANY (PROPERTY? GRAPH)?
    ;
 
 ofGraphType
