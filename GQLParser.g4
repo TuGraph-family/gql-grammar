@@ -16,7 +16,7 @@ parser grammar GQLParser;
 
 options { tokenVocab = GQLLexer; }
 
-//Entry point
+//Entry
 gqlRequest
    : gqlProgram SEMICOLON? EOF
    ;
@@ -68,7 +68,7 @@ sessionSetTimeZoneClause
    ;
 
 setTimeZoneValue
-   : expression
+   : expressionAtom
    ;
 
 sessionSetParameterClause
@@ -90,11 +90,11 @@ sessionSetValueParameterClause
    ;
 
 sessionSetParameterName
-   : parameterName (IF NOT EXISTS)?
+   : (IF NOT EXISTS)? parameterName
    ;
 
 sessionResetCommand
-   : SESSION? RESET sessionResetArguments?
+   : SESSION RESET sessionResetArguments?
    ;
 
 sessionResetArguments
@@ -106,7 +106,7 @@ sessionResetArguments
    ;
 
 sessionCloseCommand
-   : SESSION? CLOSE
+   : SESSION CLOSE
    ;
 
 startTransactionCommand
@@ -127,10 +127,9 @@ transactionAccessMode
    | READ WRITE
    ;
 
-// TODO: need to add support for externalObjectReference
 implementationDefinedAccessMode
    : I_DONT_KNOW_1
-   ;
+   ; //TODO: implementation defined
 
 rollbackCommand
    : ROLLBACK
@@ -185,16 +184,32 @@ floatLiteral
    | UNSIGNED_DECIMAL_IN_SCIENTIFIC_NOTATION
    ;
 
-singleQuotedCharacterSequence
+unbrokenSingleQuotedCharacterSequence
    : SINGLE_QUOTED_STRING_LITERAL
    ;
 
-doubleQuotedCharacterSequence
+unbrokenDoubleQuotedCharacterSequence
    : DOUBLE_QUOTED_STRING_LITERAL
    ;
 
-accentQuotedCharacterSequence
+unbrokenAccentQuotedCharacterSequence
    : ACCENT_QUOTED_STRING_LITERAL
+   ;
+
+singleQuotedCharacterSequence
+   : unbrokenSingleQuotedCharacterSequence (VERTICAL_BAR unbrokenSingleQuotedCharacterSequence)*
+   ;
+
+doubleQuotedCharacterSequence
+   : unbrokenDoubleQuotedCharacterSequence (VERTICAL_BAR unbrokenDoubleQuotedCharacterSequence)*
+   ;
+
+accentQuotedCharacterSequence
+   : unbrokenAccentQuotedCharacterSequence (VERTICAL_BAR unbrokenAccentQuotedCharacterSequence)*
+   ;
+
+unbrokenCharacterStringLiteral
+   : (unbrokenSingleQuotedCharacterSequence | unbrokenDoubleQuotedCharacterSequence)
    ;
 
 nullLiteral
@@ -216,19 +231,19 @@ sqlDatetimeLiteral
    ;
 
 dateLiteral
-   : DATE characterStringLiteral
+   : DATE unbrokenCharacterStringLiteral
    ;
 
 timeLiteral
-   : TIME characterStringLiteral
+   : TIME unbrokenCharacterStringLiteral
    ;
 
 datetimeLiteral
-   : (DATETIME | TIMESTAMP) characterStringLiteral
+   : (DATETIME | TIMESTAMP) unbrokenCharacterStringLiteral
    ;
 
 durationLiteral
-   : DURATION characterStringLiteral
+   : DURATION unbrokenCharacterStringLiteral
    | sqlIntervalLiteral
    ;
 
@@ -474,9 +489,9 @@ nestedBindingTableQuerySpecification
    ;
 
 objectExpressionPrimary
-   : variable expressionAtom
+   : VARIABLE expressionAtom
    | LEFT_PAREN expression RIGHT_PAREN
-   | expression
+   | expressionAtom
    ;
 
 linearCatalogModifyingStatement
@@ -510,13 +525,13 @@ createGraphStatement
    ;
 
 openGraphType
-   : OPEN (PROPERTY? GRAPH)? TYPE
+   : typed? ANY (PROPERTY? GRAPH)?
    ;
 
 ofGraphType
    : graphTypeLikeGraph
    | typed? graphTypeReference
-   | typed? nestedGraphTypeSpecification
+   | typed? (PROPERTY? GRAPH)? nestedGraphTypeSpecification
    ;
 
 graphTypeLikeGraph
@@ -628,7 +643,7 @@ setAllPropertiesItem
    ;
 
 setLabelItem
-   : bindingVariableReference isOrColon labelSetSpecification
+   : bindingVariableReference isOrColon labelName
    ;
 
 labelSetSpecification
@@ -653,7 +668,7 @@ removePropertyItem
    ;
 
 removeLabelItem
-   : bindingVariableReference isOrColon labelSetSpecification
+   : bindingVariableReference isOrColon labelName
    ;
 
 deleteStatement
@@ -839,7 +854,7 @@ returnItemAlias
    ;
 
 selectStatement
-   : SELECT setQuantifier? selectItemList (selectStatementBody whereClause? groupByClause? havingClause? orderByClause? offsetClause? limitClause?)?
+   : SELECT setQuantifier? (ASTERISK | selectItemList) (selectStatementBody whereClause? groupByClause? havingClause? orderByClause? offsetClause? limitClause?)?
    ;
 
 selectItemList
@@ -860,7 +875,7 @@ havingClause
 
 selectStatementBody
    : FROM selectGraphMatchList
-   | selectQuerySpecification
+   | FROM selectQuerySpecification
    ;
 
 selectGraphMatchList
@@ -872,8 +887,8 @@ selectGraphMatch
    ;
 
 selectQuerySpecification
-   : FROM nestedQuerySpecification
-   | FROM graphExpression nestedQuerySpecification
+   : nestedQuerySpecification
+   | graphExpression nestedQuerySpecification
    ;
 
 callProcedureStatement
@@ -1249,13 +1264,15 @@ insertEdgeUndirected
    ;
 
 insertElementPatternFiller
-   : elementVariableDeclaration labelAndPropertySetSpecification?
-   | elementVariableDeclaration? labelAndPropertySetSpecification
+   : elementVariableDeclaration labelAndPropertySetSpecification
+   | elementVariableDeclaration
+   | labelAndPropertySetSpecification
    ;
 
 labelAndPropertySetSpecification
-   : isOrColon labelSetSpecification elementPropertySpecification?
-   | (isOrColon labelSetSpecification)? elementPropertySpecification
+   : isOrColon labelSetSpecification
+   | isOrColon labelSetSpecification elementPropertySpecification
+   | elementPropertySpecification
    ;
 
 labelExpression
@@ -1364,7 +1381,7 @@ simplifiedTerm
    ;
 
 simplifiedFactorLow
-   : (simplifiedFactorHigh AMPERSAND)* simplifiedFactorHigh
+   : simplifiedFactorHigh (AMPERSAND simplifiedFactorHigh)*
    ;
 
 simplifiedFactorHigh
@@ -1545,10 +1562,6 @@ offsetClause
 offsetSynonym
    : OFFSET
    | SKIP_
-   ;
-
-graphTypeSpecification
-   : PROPERTY? GRAPH TYPE nestedGraphTypeSpecification
    ;
 
 nestedGraphTypeSpecification
@@ -1748,13 +1761,8 @@ destinationNodeTypeName
 
 labelSetDefinition
    : LABEL labelName
-   | LABELS labelNameSet
-   | isOrColon labelNameSet
-   ;
-
-labelNameSet
-   : labelName (COMMA labelName)?
-   | LEFT_PAREN labelName (COMMA labelName)? RIGHT_PAREN
+   | LABELS labelSetSpecification
+   | isOrColon labelSetSpecification
    ;
 
 propertyTypeSetDefinition
@@ -1782,11 +1790,11 @@ valueType
    | pathValueType                                                                                                       #pathType
    | listValueTypeName LEFT_ANGLE_BRACKET valueType RIGHT_ANGLE_BRACKET (LEFT_BRACKET maxLength RIGHT_BRACKET)? notNull? #listType1
    | valueType listValueTypeName (LEFT_BRACKET maxLength RIGHT_BRACKET)? notNull?                                        #listType2
-   | OPEN? RECORD notNull?                                                                                               #recordType1
+   | ANY? RECORD notNull?                                                                                                #recordType1
    | RECORD? fieldTypesSpecification notNull?                                                                            #recordType2
-   | ANY (VALUE)? (notNull)?                                                                                             #openDynamicUnionType
-   | ANY? PROPERTY VALUE (notNull)?                                                                                      #dynamicPropertyValueType
-   | ANY LEFT_ANGLE_BRACKET valueType (VERTICAL_BAR valueType)* RIGHT_ANGLE_BRACKET                                      #closedDynamicUnionType1
+   | ANY VALUE? notNull?                                                                                                 #openDynamicUnionType
+   | ANY? PROPERTY VALUE notNull?                                                                                        #dynamicPropertyValueType
+   | ANY VALUE? LEFT_ANGLE_BRACKET valueType (VERTICAL_BAR valueType)* RIGHT_ANGLE_BRACKET                               #closedDynamicUnionType1
    | valueType (VERTICAL_BAR valueType)+                                                                                 #closedDynamicUnionType2
    ;
 
@@ -1964,11 +1972,11 @@ graphReferenceValueType
    ;
 
 closedGraphReferenceValueType
-   : graphTypeSpecification notNull?
+   : PROPERTY? GRAPH nestedGraphTypeSpecification notNull?
    ;
 
 openGraphReferenceValueType
-   : OPEN PROPERTY? GRAPH notNull?
+   : ANY PROPERTY? GRAPH notNull?
    ;
 
 bindingTableReferenceValueType
@@ -1985,7 +1993,7 @@ closedNodeReferenceValueType
    ;
 
 openNodeReferenceValueType
-   : OPEN? NODE_SYNONYM notNull?
+   : ANY? NODE_SYNONYM notNull?
    ;
 
 edgeReferenceValueType
@@ -1998,7 +2006,7 @@ closedEdgeReferenceValueType
    ;
 
 openEdgeReferenceValueType
-   : OPEN? EDGE_SYNONYM notNull?
+   : ANY? EDGE_SYNONYM notNull?
    ;
 
 listValueTypeName
@@ -2121,7 +2129,8 @@ referenceParameter
    : parameter
    ;
 
-// TODO: need to add support for externalObjectReference
+// TODO: EOR shall be a URI with a mandatory scheme as specified by RFC 3986
+//       or alternatively shall be an absolute-URL-with-fragment character string as specified by WHATWG URL.
 externalObjectReference
    : I_DONT_KNOW_3
    ;
@@ -2196,7 +2205,7 @@ expressionPredicate
             | LEFT_PAREN matchStatementBlock RIGHT_PAREN
             | nestedQuerySpecification)                                                                 #gqlExistsExpression
    | expressionPredicate nullPredicateCond                                                              #gqlNullExpression
-   | expressionAtom normalizedPredicateCond                                                             #gqlNormalizedExpression
+   | expressionPredicate normalizedPredicateCond                                                        #gqlNormalizedExpression
    | elementVariableReference directedPredicateCond                                                     #gqlDirectedExpression
    | elementVariableReference labeledPredicateCond                                                      #gqlLabeledExpression
    | elementVariableReference sourceDestinationPredicateCond                                            #gqlSourceDestinationExpression
@@ -2213,7 +2222,6 @@ expressionAtom
    : LEFT_PAREN expression RIGHT_PAREN                                                                  #gqlParenthesizedExpression
    | expressionAtom PERIOD propertyName                                                                 #gqlPropertyReference
    | expressionAtom CONCATENATION_OPERATOR expressionAtom                                               #gqlConcatenationExpression
-   | variable                                                                                           #gqlVariableExpression
    | unsignedLiteral                                                                                    #gqlLiteralExpression
    | unaryOperator expressionAtom                                                                       #gqlUnaryExpression
    | functionCall                                                                                       #gqlFunctionExpression
@@ -2222,6 +2230,7 @@ expressionAtom
    | lhs = expressionAtom op = (ASTERISK | SOLIDUS) rhs = expressionAtom                                #gqlHighArithmeticExpression
    | lhs = expressionAtom op = (PLUS_SIGN | MINUS_SIGN) rhs = expressionAtom                            #gqlLowArithmeticExpression
    | parameterValueSpecification                                                                        #gqlParameterExpression
+   | variable                                                                                           #gqlVariableExpression
    ;
 
 truthValue
@@ -2397,15 +2406,15 @@ datetimeFunctionParameters
    ;
 
 dateString
-   : characterStringLiteral
+   : unbrokenCharacterStringLiteral
    ;
 
 timeString
-   : characterStringLiteral
+   : unbrokenCharacterStringLiteral
    ;
 
 datetimeString
-   : characterStringLiteral
+   : unbrokenCharacterStringLiteral
    ;
 
 durationFunction
@@ -2419,7 +2428,7 @@ durationFunctionParameters
    ;
 
 durationString
-   : characterStringLiteral
+   : unbrokenCharacterStringLiteral
    ;
 
 generalFunction

@@ -1108,6 +1108,10 @@ VARCHAR
    : 'VARCHAR'
    ;
 
+VARIABLE
+    : 'VARIABLE'
+    ;
+
 WALK
    : 'WALK'
    ;
